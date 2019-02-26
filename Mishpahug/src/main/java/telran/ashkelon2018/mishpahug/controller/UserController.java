@@ -17,7 +17,6 @@ import telran.ashkelon2018.mishpahug.dto.UserUpdateDto;
 import telran.ashkelon2018.mishpahug.service.UserService;
 
 @RestController
-@CrossOrigin(origins= "*")
 public class UserController {
 	
 	
@@ -25,7 +24,8 @@ public class UserController {
 	//http servlet request.session id
 	@Autowired
 	UserService service;
-
+	
+	@CrossOrigin(origins= "*")
 	@PostMapping("/user/registration")
 	public UserRegistrationResponseDto registrationUser(@RequestHeader("Authorization") String token) {
 		return service.registrationUser(token);
