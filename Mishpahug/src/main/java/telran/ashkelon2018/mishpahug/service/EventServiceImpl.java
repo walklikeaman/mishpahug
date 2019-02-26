@@ -36,6 +36,7 @@ import telran.ashkelon2018.mishpahug.dto.ParticipantDto;
 import telran.ashkelon2018.mishpahug.dto.ParticipationListResponseDto;
 import telran.ashkelon2018.mishpahug.dto.SubscribedEventResponseDto;
 import telran.ashkelon2018.mishpahug.exceptions.BusyDateException;
+import telran.ashkelon2018.mishpahug.exceptions.InvalidDataException;
 import telran.ashkelon2018.mishpahug.exceptions.InviteException;
 import telran.ashkelon2018.mishpahug.exceptions.NotAssociatedEventException;
 import telran.ashkelon2018.mishpahug.exceptions.RevoteException;
@@ -55,13 +56,29 @@ public class EventServiceImpl implements EventService {
 
 	@Override
 	public CodeResponseDto addEvent(AddEventRequestDto addEventRequestDto, String email) {
-		// TODO
 		LocalDateTime dateFrom = addEventRequestDto.getDate().atTime(addEventRequestDto.getTime());
-		System.out.println(dateFrom);
 		LocalDateTime dateTo = dateFrom.plusHours(addEventRequestDto.getDuration());
 		EventId eventId = new EventId(email, dateFrom);
 		if (eventRepository.findById(eventId).orElse(null) != null) {
 			throw new BusyDateException();
+		}
+		boolean checktime1 = LocalDateTime.now().isBefore(dateFrom.minusHours(48));
+		boolean checktime2 = LocalDateTime.now().isAfter(dateFrom.minusMonths(2));
+		boolean checktime3 = false;
+
+		List<Event> list = eventRepository.findByOwnerAndDate(email, addEventRequestDto.getDate());
+		if (!list.isEmpty()) {
+			for (Event event : list) {
+				if (event.getDateTo().isBefore(dateFrom)
+						|| dateFrom.plusHours(addEventRequestDto.getDuration()).isBefore(event.getDateFrom())) {
+					checktime3 = true;
+				}
+			}
+		} else {
+			checktime3 = true;
+		}
+		if (!(checktime1 && checktime2 && checktime3)) {
+			throw new InvalidDataException();
 		}
 
 		Event event = new Event(eventId, addEventRequestDto.getTitle(), addEventRequestDto.getHoliday(),
@@ -186,11 +203,11 @@ public class EventServiceImpl implements EventService {
 		return listResponse;
 	}
 
-//	private Predicate<Event> predicateParticipant(String email) {
-//		UserAccount userAccount = userRepository.findById(email).get();
-//		return e -> userAccount.getSubscribedEvents().contains(e.getEventId());
-//
-//	}
+	// private Predicate<Event> predicateParticipant(String email) {
+	// UserAccount userAccount = userRepository.findById(email).get();
+	// return e -> userAccount.getSubscribedEvents().contains(e.getEventId());
+	//
+	// }
 
 	@Override
 	public CodeResponseDto subscribeToEvent(EventId eventId, String email) {
@@ -238,8 +255,8 @@ public class EventServiceImpl implements EventService {
 	@Override
 	public CodeResponseDto voteForEvent(String email, EventId eventId, double voteCount) {
 		Event event = eventRepository.findById(eventId).get();
-		ParticipantDto participant = event.getParticipants().stream().filter(p -> p.getEmail().equals(email)).findFirst()
-				.orElse(null);
+		ParticipantDto participant = event.getParticipants().stream().filter(p -> p.getEmail().equals(email))
+				.findFirst().orElse(null);
 		if (event.getStatus() != "done" || participant == null || participant.isVoted()) {
 			throw new RevoteException();
 		}

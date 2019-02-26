@@ -12,6 +12,7 @@ public interface EventRepository extends MongoRepository<Event, EventId> {
 	List<Event> findByDateFromBetweenAndStatusIn(LocalDate fromDate, LocalDate toDate, String...statuses);
 	List<Event> findByStatus(String status);
 	List<Event> findByOwnerAndStatusIn(String email, String...statuses);
+	List<Event> findByOwnerAndDate(String email, LocalDate date);
 	
 	//List<Event> findbyAll(Predicate<Event> predicate);
 }
