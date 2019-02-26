@@ -15,7 +15,7 @@ import telran.ashkelon2018.mishpahug.dto.UserResponseDto;
 import telran.ashkelon2018.mishpahug.dto.UserStaticFieldsDto;
 import telran.ashkelon2018.mishpahug.dto.UserUpdateDto;
 import telran.ashkelon2018.mishpahug.service.UserService;
-@CrossOrigin(origins="*", allowedHeaders= {"POST","OPTIONS","GET","PUT"})
+@CrossOrigin(origins="*", allowedHeaders= "*" )
 @RestController
 public class UserController {
 	
