@@ -25,7 +25,7 @@ public class UserController {
 	@Autowired
 	UserService service;
 	
-	@CrossOrigin(origins= "*")
+	@CrossOrigin(origins= "/**")
 	@PostMapping("/user/registration")
 	public UserRegistrationResponseDto registrationUser(@RequestHeader("Authorization") String token) {
 		return service.registrationUser(token);
