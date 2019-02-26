@@ -25,8 +25,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter{
 		httpSecurity.httpBasic();
 		httpSecurity.csrf().disable();
 		//httpSecurity.cors().disable();
-		httpSecurity.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-		httpSecurity.authorizeRequests().anyRequest().authenticated();
-	
+		//httpSecurity.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+		//httpSecurity.authorizeRequests().anyRequest().authenticated();
+		httpSecurity.authorizeRequests().anyRequest().permitAll();
 	}
 }
