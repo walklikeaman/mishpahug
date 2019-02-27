@@ -9,10 +9,10 @@ import telran.ashkelon2018.mishpahug.domain.Event;
 import telran.ashkelon2018.mishpahug.domain.EventId;
 
 public interface EventRepository extends MongoRepository<Event, EventId> {
+	
 	List<Event> findByDateFromBetweenAndStatusIn(LocalDate fromDate, LocalDate toDate, String...statuses);
 	List<Event> findByStatus(String status);
 	List<Event> findByOwnerAndStatusIn(String email, String...statuses);
-	List<Event> findByOwnerAndDate(String email, LocalDate date);
-	
-	//List<Event> findbyAll(Predicate<Event> predicate);
+	//List<Event> findByOwnerAndDateFromIn(String email, LocalDate date);
+	List<Event> findByDateFromBetweenAndOwnerIn(LocalDate fromDate, LocalDate toDate, String email);
 }

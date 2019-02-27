@@ -2,6 +2,7 @@ package telran.ashkelon2018.mishpahug.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.Period;
 import java.time.Year;
 import java.time.temporal.TemporalAdjusters;
@@ -62,20 +63,25 @@ public class EventServiceImpl implements EventService {
 		if (eventRepository.findById(eventId).orElse(null) != null) {
 			throw new BusyDateException();
 		}
+		LocalDateTime checkDateFrom = addEventRequestDto.getDate().atTime(LocalTime.of(0, 0, 0));
+		LocalDateTime checkDateTo = checkDateFrom.plusDays(1);
 		boolean checktime1 = LocalDateTime.now().isBefore(dateFrom.minusHours(48));
 		boolean checktime2 = LocalDateTime.now().isAfter(dateFrom.minusMonths(2));
 		boolean checktime3 = false;
 
-		List<Event> list = eventRepository.findByOwnerAndDate(email, addEventRequestDto.getDate());
+		List<Event> list = eventRepository.findByDateFromBetweenAndOwnerIn(checkDateFrom.toLocalDate(), checkDateTo.toLocalDate(), email);
+		if (list.isEmpty()) {
+			checktime3 = true;
+		}
 		if (!list.isEmpty()) {
+			checktime3 = true;
 			for (Event event : list) {
-				if (event.getDateTo().isBefore(dateFrom)
-						|| dateFrom.plusHours(addEventRequestDto.getDuration()).isBefore(event.getDateFrom())) {
-					checktime3 = true;
+				if (!event.getDateTo().isBefore(dateFrom)
+						&& !dateFrom.plusHours(addEventRequestDto.getDuration()).isBefore(event.getDateFrom())) {
+					checktime3 = false;
 				}
 			}
-		} else {
-			checktime3 = true;
+
 		}
 		if (!(checktime1 && checktime2 && checktime3)) {
 			throw new InvalidDataException();
