@@ -13,15 +13,7 @@ import lombok.NoArgsConstructor;
 @JsonInclude(Include.NON_NULL)
 public class AddressDto {
 	String city;
-	
 	String place_id;
 	Location location;
-	
-	public AddressDto(String city) {
-		this.city = city;
-	}
-	
-	
+
 }
-
-

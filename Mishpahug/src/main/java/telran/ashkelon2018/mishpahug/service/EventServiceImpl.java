@@ -13,11 +13,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.Distance;
+import org.springframework.data.geo.GeoResults;
+import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
 
 import telran.ashkelon2018.mishpahug.configuration.AccountConfiguration;
 import telran.ashkelon2018.mishpahug.dao.EventRepository;
 import telran.ashkelon2018.mishpahug.dao.UserRepository;
+import telran.ashkelon2018.mishpahug.domain.Address;
 import telran.ashkelon2018.mishpahug.domain.Event;
 import telran.ashkelon2018.mishpahug.domain.EventId;
 import telran.ashkelon2018.mishpahug.domain.UserAccount;
@@ -28,7 +32,9 @@ import telran.ashkelon2018.mishpahug.dto.CodeResponseDto;
 import telran.ashkelon2018.mishpahug.dto.EventDto;
 import telran.ashkelon2018.mishpahug.dto.EventForCalendarDto;
 import telran.ashkelon2018.mishpahug.dto.EventListForCalendarResponseDto;
+import telran.ashkelon2018.mishpahug.dto.EventListRequestDto;
 import telran.ashkelon2018.mishpahug.dto.EventListResponseDto;
+import telran.ashkelon2018.mishpahug.dto.Filter;
 import telran.ashkelon2018.mishpahug.dto.InviteToEventResponseDto;
 import telran.ashkelon2018.mishpahug.dto.MyEventResponseDto;
 import telran.ashkelon2018.mishpahug.dto.MyEventsHistoryResponseDto;
@@ -146,9 +152,9 @@ public class EventServiceImpl implements EventService {
 		if (!isSubscribed(event.getParticipants(), email)) {
 			throw new UserIsNotAssociatedException(209, "User is not associated with the event!");
 		}
-		AddressDto address;
+		Address address;
 		if (event.getStatus().equals("in progress")) {
-			address = new AddressDto(event.getAddress().getCity());
+			address = new Address(event.getAddress().getCity());
 		} else {
 			address = event.getAddress();
 		}
@@ -189,7 +195,7 @@ public class EventServiceImpl implements EventService {
 				listResponse.add(new ParticipationListResponseDto(event.getEventId(), event.getTitle(),
 						event.getHoliday(), event.getConfession(), event.getDateFrom().toLocalDate(),
 						event.getDateFrom().toLocalTime(), event.getDuration(),
-						new AddressDto(event.getAddress().getCity()), event.getFood(), event.getDescription(),
+						new Address(event.getAddress().getCity()), event.getFood(), event.getDescription(),
 						event.getStatus(), owner));
 			}
 			if (event.getStatus().equals("pending")) {
@@ -297,13 +303,20 @@ public class EventServiceImpl implements EventService {
 	}
 
 	@Override
-	public EventListResponseDto getListOfEventsInProgress() {
+	public EventListResponseDto getListOfEventsInProgress(Integer page, Integer size, EventListRequestDto body) {
+		//TODO
 		if (eventRepository == null) {
 			return null;
 		}
-		List<Event> listOfEventsInProgress = eventRepository.findByStatus("in progres");
+		Point point = new Point(body.getLocation().getLat(), body.getLocation().getLng());
+		Distance distance = new Distance(body.getLocation().getRadius());
+		Filter filter = body.getFilter();
+		GeoResults<Event> geoResults = eventRepository.findByLocationNearAndStatusIn(point, distance, "in progress");
+		List<Event> listOfEvents = geoResults.getContent().stream().map(g -> g.getContent()).collect(Collectors.toList());
+		
+		//List<Event> listOfEventsInProgress = eventRepository.findByStatus("in progres");
 		List<EventDto> content = new ArrayList<>();
-		listOfEventsInProgress.forEach(e -> content.add(eventToEventDtoConverter(e)));
+		listOfEvents.forEach(e -> content.add(eventToEventDtoConverter(e)));
 		content.sort((x, y) -> y.getDate().compareTo(x.getDate()));
 		return new EventListResponseDto(content);
 
@@ -324,7 +337,7 @@ public class EventServiceImpl implements EventService {
 		UserAccount user = userRepository.findById(event.getEventId().getOwner()).get();
 		return EventDto.builder().eventId(event.getEventId()).title(event.getTitle()).holiday(event.getHoliday())
 				.confession(event.getConfession()).date(event.getDateFrom().toLocalDate())
-				.time(event.getDateFrom().toLocalTime()).duration(event.getDuration()).address(event.getAddress())
+				.time(event.getDateFrom().toLocalTime()).duration(event.getDuration()).address(new AddressDto(event.getAddress().getCity(), event.getAddress().getPlace_id(), event.getLocation()))
 				.food(event.getFood()).description(event.getDescription()).owner(userAccountToOwnerDtoConverter(user))
 				.build();
 	}

@@ -7,6 +7,7 @@ import telran.ashkelon2018.mishpahug.dto.AddEventRequestDto;
 import telran.ashkelon2018.mishpahug.dto.ChangeEventResponseDto;
 import telran.ashkelon2018.mishpahug.dto.CodeResponseDto;
 import telran.ashkelon2018.mishpahug.dto.EventListForCalendarResponseDto;
+import telran.ashkelon2018.mishpahug.dto.EventListRequestDto;
 import telran.ashkelon2018.mishpahug.dto.EventListResponseDto;
 import telran.ashkelon2018.mishpahug.dto.InviteToEventResponseDto;
 import telran.ashkelon2018.mishpahug.dto.MyEventResponseDto;
@@ -26,7 +27,7 @@ public interface EventService {
 	CodeResponseDto unsubscribeToEvent(EventId eventId, String email);
 	CodeResponseDto voteForEvent(String email, EventId eventId, double voteCount);
 	InviteToEventResponseDto inviteToEvent(String email, EventId eventId, String userId);
-	EventListResponseDto getListOfEventsInProgress();
+	EventListResponseDto getListOfEventsInProgress(Integer page, Integer size, EventListRequestDto body);
 	ChangeEventResponseDto changeEventStatus(String email, EventId eventId);
 	
 	

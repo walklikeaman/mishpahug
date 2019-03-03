@@ -9,6 +9,7 @@ import org.springframework.data.annotation.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import telran.ashkelon2018.mishpahug.domain.Address;
 import telran.ashkelon2018.mishpahug.domain.EventId;
 @Builder
 @AllArgsConstructor	
@@ -22,7 +23,7 @@ public class SubscribedEventResponseDto {
 	LocalDate date;
 	LocalTime time;
 	int duration;
-	AddressDto address; //в статусе in progress только city, в статусе pending full address
+	Address address; //в статусе in progress только city, в статусе pending full address
 	List<String> food;
 	String description;
 	String status;
