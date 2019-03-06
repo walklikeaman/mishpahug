@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
+import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -31,6 +33,8 @@ public class Event {
 	String title;
 	String holiday;
 	Address address;
+	@GeoSpatialIndexed(type = GeoSpatialIndexType.GEO_2D)
+	Location location;
 	String confession;	
 	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")	
 	LocalDateTime dateFrom;
@@ -40,9 +44,9 @@ public class Event {
 	List<String> food;
 	String description;
 	String status;
-	String owner; //Id of user that created this event
+	String owner;
 	Set<ParticipantDto> participants;
-	Location location;
+	
 
 	public Event(EventId eventId, String title, String holiday, AddressDto addressDto, String confession, LocalDateTime dateFrom,
 			LocalDateTime dateTo, List<String> food, String description, int duration) {

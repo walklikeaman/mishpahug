@@ -11,10 +11,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.geo.Distance;
-import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
 
@@ -75,7 +75,8 @@ public class EventServiceImpl implements EventService {
 		boolean checktime2 = LocalDateTime.now().isAfter(dateFrom.minusMonths(2));
 		boolean checktime3 = false;
 
-		List<Event> list = eventRepository.findByDateFromBetweenAndOwnerIn(checkDateFrom.toLocalDate(), checkDateTo.toLocalDate(), email);
+		List<Event> list = eventRepository.findByDateFromBetweenAndOwnerIn(checkDateFrom.toLocalDate(),
+				checkDateTo.toLocalDate(), email);
 		if (list.isEmpty()) {
 			checktime3 = true;
 		}
@@ -303,22 +304,36 @@ public class EventServiceImpl implements EventService {
 	}
 
 	@Override
-	public EventListResponseDto getListOfEventsInProgress(Integer page, Integer size, EventListRequestDto body) {
-		//TODO
-		if (eventRepository == null) {
-			return null;
-		}
-		Point point = new Point(body.getLocation().getLat(), body.getLocation().getLng());
+	public EventListResponseDto getListOfEventsInProgress(Integer page, Integer size, EventListRequestDto body, String email) {
+		// TODO
+		Point point = new Point(body.getLocation().getLng(), body.getLocation().getLat());
 		Distance distance = new Distance(body.getLocation().getRadius());
-		Filter filter = body.getFilter();
-		GeoResults<Event> geoResults = eventRepository.findByLocationNearAndStatusIn(point, distance, "in progress");
-		List<Event> listOfEvents = geoResults.getContent().stream().map(g -> g.getContent()).collect(Collectors.toList());
-		
-		//List<Event> listOfEventsInProgress = eventRepository.findByStatus("in progres");
+		Filter filters = body.getFilters();
+		List<Event> listOfEvents = eventRepository.findByLocationNearAndStatusEquals(point, distance, "in progress");
+				//.getContent().stream().map(g -> g.getContent()).collect(Collectors.toList());
 		List<EventDto> content = new ArrayList<>();
 		listOfEvents.forEach(e -> content.add(eventToEventDtoConverter(e)));
 		content.sort((x, y) -> y.getDate().compareTo(x.getDate()));
-		return new EventListResponseDto(content);
+		
+		Stream<EventDto> stream = content.stream();
+	
+		if (filters.getDateFrom() != null) {
+			stream = stream.filter(e -> e.getDate().isAfter(filters.getDateFrom()));
+		}
+		if (filters.getDateTo() != null) {
+			stream = stream.filter(e -> e.getDate().isBefore(filters.getDateTo()));
+		}
+		if (filters.getHolidays() != null) {
+			stream = stream.filter(e -> e.getHoliday().equalsIgnoreCase(filters.getHolidays()));
+		}
+		if (filters.getConfession() != null) {
+			stream = stream.filter(e -> e.getConfession().equalsIgnoreCase(filters.getConfession()));
+		}
+		if (filters.getFood() != null) {
+			stream = stream.filter(e -> e.getFood().contains(filters.getFood()));
+		}
+
+		return new EventListResponseDto(stream.collect(Collectors.toList()), page, size);
 
 	}
 
@@ -337,7 +352,9 @@ public class EventServiceImpl implements EventService {
 		UserAccount user = userRepository.findById(event.getEventId().getOwner()).get();
 		return EventDto.builder().eventId(event.getEventId()).title(event.getTitle()).holiday(event.getHoliday())
 				.confession(event.getConfession()).date(event.getDateFrom().toLocalDate())
-				.time(event.getDateFrom().toLocalTime()).duration(event.getDuration()).address(new AddressDto(event.getAddress().getCity(), event.getAddress().getPlace_id(), event.getLocation()))
+				.time(event.getDateFrom().toLocalTime()).duration(event.getDuration())
+				.address(new AddressDto(event.getAddress().getCity(), event.getAddress().getPlace_id(),
+						event.getLocation()))
 				.food(event.getFood()).description(event.getDescription()).owner(userAccountToOwnerDtoConverter(user))
 				.build();
 	}

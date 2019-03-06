@@ -2,6 +2,8 @@ package telran.ashkelon2018.mishpahug.dto;
 
 import java.util.List;
 
+import javax.validation.constraints.Size;
+
 import org.springframework.data.domain.Sort;
 
 import lombok.AllArgsConstructor;
@@ -23,12 +25,14 @@ public class EventListResponseDto {
 	boolean last;
 	Sort sort;
 	
-	public EventListResponseDto(List<EventDto> content) {
+	public EventListResponseDto(List<EventDto> content, int page, int size) {
 		this.content = content;
 		this.totalElements = content.size();
-		this.totalPages = content.size() % 12 > 0 ? content.size() / 12 + 1 : content.size() / 12;
-		this.size = 12;
-		this.first = true;
+		this.totalPages = content.size() % size > 0 ? content.size() / size + 1 : content.size() / size;
+		this.size = size;	
+		this.numberOfElements = (number >= (content.size() % size > 0 ? content.size() / size + 1 : content.size() / size) ? true : false)  ? content.size() % size : size; 
+		this.first = number ==  0 ? true : false;
+		this.last = number >= (content.size() % size > 0 ? content.size() / size + 1 : content.size() / size) ? true : false;
 		this.sort = new Sort(Sort.Direction.DESC, "dateFrom");
 	}
 }

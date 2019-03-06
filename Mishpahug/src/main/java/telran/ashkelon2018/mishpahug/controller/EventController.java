@@ -39,11 +39,15 @@ public class EventController {
 		return eventService.addEvent(addEventRequestDto, principal.getName());
 	};
 
-	@PostMapping("/event/allprogresslist?page={page}&size={size}")
-	public EventListResponseDto listOfEventsInProgress(@PathVariable Integer page, @PathVariable Integer size,
-			@RequestBody EventListRequestDto body) {
-		return eventService.getListOfEventsInProgress(page, size, body);
-
+	@PostMapping("/event/allprogresslist")
+	public EventListResponseDto listOfEventsInProgress(@RequestParam Integer page, @RequestParam Integer size,
+			@RequestBody EventListRequestDto body, Principal principal) {
+		String email = null;
+		
+		if (principal != null) {
+			email = principal.getName();
+		}
+		return eventService.getListOfEventsInProgress(page, size, body, email);
 	}
 
 	@GetMapping("/event/calendar/{month}")
@@ -66,7 +70,6 @@ public class EventController {
 	@GetMapping("/event/currentlist")
 	public List<MyEventResponseDto> getMyEventsList(Principal principal) {
 		return eventService.getMyEventsList(principal.getName());
-
 	}
 
 	@GetMapping("/event/historylist")

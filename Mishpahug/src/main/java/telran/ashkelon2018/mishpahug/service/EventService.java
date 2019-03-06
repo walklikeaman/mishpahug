@@ -27,7 +27,7 @@ public interface EventService {
 	CodeResponseDto unsubscribeToEvent(EventId eventId, String email);
 	CodeResponseDto voteForEvent(String email, EventId eventId, double voteCount);
 	InviteToEventResponseDto inviteToEvent(String email, EventId eventId, String userId);
-	EventListResponseDto getListOfEventsInProgress(Integer page, Integer size, EventListRequestDto body);
+	EventListResponseDto getListOfEventsInProgress(Integer page, Integer size, EventListRequestDto body, String email);
 	ChangeEventResponseDto changeEventStatus(String email, EventId eventId);
 	
 	

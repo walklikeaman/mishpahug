@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 
 public class EventListRequestDto {
 	Location location;
-	Filter filter;
+	Filter filters;
 
 }

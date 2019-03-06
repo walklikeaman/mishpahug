@@ -24,7 +24,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 	public void configure(WebSecurity web) {
 		web.ignoring().antMatchers(HttpMethod.GET, "/user/staticfields");
 		web.ignoring().antMatchers(HttpMethod.POST, "/user/registration");
-		web.ignoring().antMatchers(HttpMethod.GET, "/event/allprogresslist");
+		//web.ignoring().antMatchers(HttpMethod.POST, "/event/allprogresslist");
 	}
 
 	@Override
@@ -33,8 +33,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 		httpSecurity.csrf().disable();
 		httpSecurity.cors();
 		// httpSecurity.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+		httpSecurity.authorizeRequests().antMatchers(HttpMethod.POST, "/event/allprogresslist").permitAll();
 		httpSecurity.authorizeRequests().anyRequest().authenticated();
-
+		
 	}
 
 	@Bean
