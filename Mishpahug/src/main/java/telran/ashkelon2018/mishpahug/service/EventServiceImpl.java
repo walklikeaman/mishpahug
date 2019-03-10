@@ -14,6 +14,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
@@ -34,7 +38,7 @@ import telran.ashkelon2018.mishpahug.dto.EventForCalendarDto;
 import telran.ashkelon2018.mishpahug.dto.EventListForCalendarResponseDto;
 import telran.ashkelon2018.mishpahug.dto.EventListRequestDto;
 import telran.ashkelon2018.mishpahug.dto.EventListResponseDto;
-import telran.ashkelon2018.mishpahug.dto.Filter;
+import telran.ashkelon2018.mishpahug.dto.Filters;
 import telran.ashkelon2018.mishpahug.dto.InviteToEventResponseDto;
 import telran.ashkelon2018.mishpahug.dto.MyEventResponseDto;
 import telran.ashkelon2018.mishpahug.dto.MyEventsHistoryResponseDto;
@@ -44,6 +48,7 @@ import telran.ashkelon2018.mishpahug.dto.ParticipationListResponseDto;
 import telran.ashkelon2018.mishpahug.dto.SubscribedEventResponseDto;
 import telran.ashkelon2018.mishpahug.exceptions.BusyDateException;
 import telran.ashkelon2018.mishpahug.exceptions.InvalidDataException;
+import telran.ashkelon2018.mishpahug.exceptions.InvalidFilterParameters;
 import telran.ashkelon2018.mishpahug.exceptions.InviteException;
 import telran.ashkelon2018.mishpahug.exceptions.NotAssociatedEventException;
 import telran.ashkelon2018.mishpahug.exceptions.RevoteException;
@@ -304,19 +309,29 @@ public class EventServiceImpl implements EventService {
 	}
 
 	@Override
-	public EventListResponseDto getListOfEventsInProgress(Integer page, Integer size, EventListRequestDto body, String email) {
+	public EventListResponseDto getListOfEventsInProgress(Integer page, Integer size, EventListRequestDto body,
+			String email) {
 		// TODO
-		Point point = new Point(body.getLocation().getLng(), body.getLocation().getLat());
+		Point point = new Point(body.getLocation().getLat(), body.getLocation().getLng());
 		Distance distance = new Distance(body.getLocation().getRadius());
-		Filter filters = body.getFilters();
-		List<Event> listOfEvents = eventRepository.findByLocationNearAndStatusEquals(point, distance, "in progress");
-				//.getContent().stream().map(g -> g.getContent()).collect(Collectors.toList());
+		Filters filters = body.getFilters();
+		Pageable pageable = PageRequest.of(page, size, new Sort(Sort.Direction.DESC, "dateFrom"));
+		Page<Event> listOfEvents = eventRepository.findByLocationNearAndStatusEquals(point, distance, "in progress",
+				pageable);
 		List<EventDto> content = new ArrayList<>();
 		listOfEvents.forEach(e -> content.add(eventToEventDtoConverter(e)));
-		content.sort((x, y) -> y.getDate().compareTo(x.getDate()));
-		
+		// content.sort((x, y) -> y.getDate().compareTo(x.getDate()));
+		LocalDate dateFrom = filters.getDateFrom();
+		if (dateFrom != null) {
+			if (dateFrom.isBefore(LocalDate.now())) {
+				throw new InvalidFilterParameters();
+			}
+		}
+
 		Stream<EventDto> stream = content.stream();
-	
+		if (email != null) {
+			stream = stream.filter(e -> !e.getEventId().getOwner().equals(email));
+		}
 		if (filters.getDateFrom() != null) {
 			stream = stream.filter(e -> e.getDate().isAfter(filters.getDateFrom()));
 		}
@@ -324,6 +339,7 @@ public class EventServiceImpl implements EventService {
 			stream = stream.filter(e -> e.getDate().isBefore(filters.getDateTo()));
 		}
 		if (filters.getHolidays() != null) {
+
 			stream = stream.filter(e -> e.getHoliday().equalsIgnoreCase(filters.getHolidays()));
 		}
 		if (filters.getConfession() != null) {

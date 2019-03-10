@@ -42,8 +42,7 @@ public class EventController {
 	@PostMapping("/event/allprogresslist")
 	public EventListResponseDto listOfEventsInProgress(@RequestParam Integer page, @RequestParam Integer size,
 			@RequestBody EventListRequestDto body, Principal principal) {
-		String email = null;
-		
+		String email = null;	
 		if (principal != null) {
 			email = principal.getName();
 		}

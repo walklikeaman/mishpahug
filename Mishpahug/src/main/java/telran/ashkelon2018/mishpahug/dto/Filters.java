@@ -2,6 +2,7 @@ package telran.ashkelon2018.mishpahug.dto;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
@@ -12,10 +13,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(Include.NON_NULL)
-
-public class Filter {
-	LocalDate dateFrom; //[yyyy-MM-dd]
-	LocalDate dateTo; //[yyyy-MM-dd]
+public class Filters {
+	@JsonFormat(pattern= "yyyy-MM-dd")
+	LocalDate dateFrom; 	
+	@JsonFormat(pattern= "yyyy-MM-dd")
+	LocalDate dateTo; 	
 	String holidays; 
 	String confession;
 	String food;
