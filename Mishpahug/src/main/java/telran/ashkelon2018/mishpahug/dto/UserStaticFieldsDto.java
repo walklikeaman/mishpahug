@@ -21,32 +21,39 @@ public class UserStaticFieldsDto {
 	
 	public UserStaticFieldsDto() {
 		List<String> confession = new ArrayList<>();
-		confession.add("religious");
-		confession.add("irreligious");
+		confession.add("Religious");
+		confession.add("Irreligious");
 		this.confession = confession;
 		List<String> gender = new ArrayList<>();
-		gender.add("male");
-		gender.add("female");
+		gender.add("Male");
+		gender.add("Female");
 		this.gender = gender;
 		List<String> maritalStatus = new ArrayList<>();
-		maritalStatus.add("married");
-		maritalStatus.add("single");
-		maritalStatus.add("couple");
+		maritalStatus.add("Single");
+		maritalStatus.add("Married");
+		maritalStatus.add("Divorced");
+		maritalStatus.add("In a civil union");
+		maritalStatus.add("In a ralationship");
+		maritalStatus.add("Widowed");
 		this.maritalStatus = maritalStatus;
 		List<String> foodPreferences = new ArrayList<>();
-		foodPreferences.add("vegetarian");
-		foodPreferences.add("kosher");
-		foodPreferences.add("non-vegetarian");
+		foodPreferences.add("Kosher");
+		foodPreferences.add("Vegetarian");		
+		foodPreferences.add("Any");
 		this.foodPreferences = foodPreferences;
 		List<String> languages = new ArrayList<>();
 		languages.add("Hebrew");
 		languages.add("English");
+		languages.add("French");
 		languages.add("Russian");
+		languages.add("Spain");
 		this.languages = languages;
 		List<String> holiday = new ArrayList<>();
-		holiday.add("Pesah");
-		holiday.add("Shabbat");
-		holiday.add("Other");
+		holiday.add("Pesach");
+		holiday.add("Shabat");
+		holiday.add("Rosh Hashana");
+		holiday.add("Purim");
+		holiday.add("Sukkot");
 		this.holiday = holiday;
 	}
 

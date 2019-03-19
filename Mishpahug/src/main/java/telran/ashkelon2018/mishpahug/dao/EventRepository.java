@@ -20,5 +20,6 @@ public interface EventRepository extends MongoRepository<Event, EventId> {
 	List<Event> findByOwnerAndDateFromIn(String email, LocalDate date);
 	List<Event> findByDateFromBetweenAndOwnerIn(LocalDate fromDate, LocalDate toDate, String email);
 	Page<Event> findByLocationNearAndStatusEquals(Point point, Distance distance, String status, Pageable pagable);
+	Page<Event> findByStatus(String status, Pageable pagable);
 
 }

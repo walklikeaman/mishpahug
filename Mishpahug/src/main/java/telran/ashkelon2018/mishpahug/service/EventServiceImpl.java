@@ -24,11 +24,14 @@ import org.springframework.stereotype.Service;
 
 import telran.ashkelon2018.mishpahug.configuration.AccountConfiguration;
 import telran.ashkelon2018.mishpahug.dao.EventRepository;
+import telran.ashkelon2018.mishpahug.dao.NotificationRepository;
 import telran.ashkelon2018.mishpahug.dao.UserRepository;
 import telran.ashkelon2018.mishpahug.domain.Address;
 import telran.ashkelon2018.mishpahug.domain.Event;
 import telran.ashkelon2018.mishpahug.domain.EventId;
+import telran.ashkelon2018.mishpahug.domain.Notification;
 import telran.ashkelon2018.mishpahug.domain.UserAccount;
+import telran.ashkelon2018.mishpahug.domain.UserNotifications;
 import telran.ashkelon2018.mishpahug.dto.AddEventRequestDto;
 import telran.ashkelon2018.mishpahug.dto.AddressDto;
 import telran.ashkelon2018.mishpahug.dto.ChangeEventResponseDto;
@@ -65,6 +68,9 @@ public class EventServiceImpl implements EventService {
 
 	@Autowired
 	EventRepository eventRepository;
+	
+	@Autowired
+	NotificationRepository notificationRepository;
 
 	@Override
 	public CodeResponseDto addEvent(AddEventRequestDto addEventRequestDto, String email) {
@@ -299,7 +305,7 @@ public class EventServiceImpl implements EventService {
 			throw new NotAssociatedEventException();
 		}
 		ParticipantDto user = event.getParticipants().stream().filter(p -> p.getEmail().equals(userId)).findFirst()
-				.orElse(null);
+			.orElse(null);
 		if (user == null || user.isInvited()) {
 			throw new InviteException();
 		}
@@ -311,16 +317,21 @@ public class EventServiceImpl implements EventService {
 	@Override
 	public EventListResponseDto getListOfEventsInProgress(Integer page, Integer size, EventListRequestDto body,
 			String email) {
-		// TODO
-		Point point = new Point(body.getLocation().getLat(), body.getLocation().getLng());
-		Distance distance = new Distance(body.getLocation().getRadius());
-		Filters filters = body.getFilters();
+		Double lat = body.getLocation().getLat();
+		Double lng = body.getLocation().getLng();
 		Pageable pageable = PageRequest.of(page, size, new Sort(Sort.Direction.DESC, "dateFrom"));
-		Page<Event> listOfEvents = eventRepository.findByLocationNearAndStatusEquals(point, distance, "in progress",
-				pageable);
+		Page<Event> listOfEvents;	
+		if (lat == null && lng == null) {
+			listOfEvents = eventRepository.findByStatus("in progress", pageable);
+		}else {
+			Point point = new Point(lat, lng);
+			Distance distance = new Distance(body.getLocation().getRadius());
+			listOfEvents = eventRepository.findByLocationNearAndStatusEquals(point, distance, "in progress",
+					pageable);
+		}
+		Filters filters = body.getFilters();
 		List<EventDto> content = new ArrayList<>();
 		listOfEvents.forEach(e -> content.add(eventToEventDtoConverter(e)));
-		// content.sort((x, y) -> y.getDate().compareTo(x.getDate()));
 		LocalDate dateFrom = filters.getDateFrom();
 		if (dateFrom != null) {
 			if (dateFrom.isBefore(LocalDate.now())) {
@@ -360,8 +371,15 @@ public class EventServiceImpl implements EventService {
 			throw new NotAssociatedEventException();
 		}
 		event.setStatus("pending");
-		eventRepository.save(event);
+		eventRepository.save(event);	
+		event.getParticipants().stream().filter(p -> p.isInvited()).forEach(p -> putNotification(p.getEmail(), eventId));;
 		return new ChangeEventResponseDto(eventId, event.getStatus());
+	}
+
+	private void putNotification(String email, EventId eventId) {
+		UserNotifications userNotifications = notificationRepository.findById(email).get();
+		userNotifications.getNotifications().add(new Notification("Invitation", "Event in status pending", LocalDate.now(), "system", false, eventId));
+		notificationRepository.save(userNotifications);
 	}
 
 	private EventDto eventToEventDtoConverter(Event event) {

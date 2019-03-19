@@ -15,6 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Setter
 @EqualsAndHashCode(of = {"notificationId"})
+
 public class Notification {
 	@Id
 	int notificationId;
@@ -24,4 +25,15 @@ public class Notification {
 	String type;
 	boolean isRead;
 	EventId eventId;
+	
+	public Notification(String title, String message, LocalDate date, String type, boolean isRead, EventId eventId) {
+		this.title = title;
+		this.message = message;
+		this.date = date;
+		this.type = type;
+		this.isRead = isRead;
+		this.eventId = eventId;
+	}
+	
+	
 }

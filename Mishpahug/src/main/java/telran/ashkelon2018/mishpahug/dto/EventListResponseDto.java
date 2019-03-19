@@ -2,8 +2,6 @@ package telran.ashkelon2018.mishpahug.dto;
 
 import java.util.List;
 
-import javax.validation.constraints.Size;
-
 import org.springframework.data.domain.Sort;
 
 import lombok.AllArgsConstructor;

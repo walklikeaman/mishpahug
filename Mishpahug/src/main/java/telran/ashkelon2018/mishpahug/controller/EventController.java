@@ -94,7 +94,7 @@ public class EventController {
 
 	@PutMapping("/event/invitation/{userId}")
 	public InviteToEventResponseDto inviteToEvent(Principal principal, @RequestBody EventId eventId,
-			@RequestParam String userId) {
+			@PathVariable String userId) {
 		return eventService.inviteToEvent(principal.getName(), eventId, userId);
 	}
 
